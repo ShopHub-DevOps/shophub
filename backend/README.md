@@ -1,98 +1,85 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# ShopHub backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS API for the ShopHub platform: authentication, shop CRUD, and the Kubernetes client that applies `Shop`, `DiscordChannel`, and `Wallet` custom resources on behalf of signed-in users.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Tech stack
 
-## Description
+| Layer | Technology |
+|---|---|
+| Runtime | Node.js 20 |
+| Language | TypeScript |
+| Framework | NestJS 11 |
+| Database | PostgreSQL via TypeORM |
+| Tests | Jest (unit + e2e) + Testcontainers (integration) |
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Local development
 
-## Project setup
+All commands assume the `dev-ops` conda env is active so Node 20 is on `PATH`:
 
 ```bash
-$ npm install
+conda activate dev-ops
 ```
 
-## Compile and run the project
+### Running the stack
+
+The full stack (backend + frontend + Postgres) is orchestrated by `docker-compose.yml` at the repo root. From the repo root:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+make up      # docker compose up -d --build
+make down    # docker compose down (keeps the postgres-data volume)
 ```
 
-## Run tests
+By default the backend listens on `http://localhost:8080`, the frontend on `http://localhost:3000`, and Postgres on `localhost:5432` (override any of these via `.env`).
+
+### Database connection
+
+The backend reads `DATABASE_URL` from the environment and registers a TypeORM connection via `DatabaseModule`. When `DATABASE_URL` is unset, `DatabaseModule` mounts in no-op mode and emits a warning - this keeps unit and e2e tests runnable without a live database.
+
+`docker-compose.yml` sets `DATABASE_URL=postgres://shophub:changeme@postgres:5432/shophub` for the backend container automatically.
+
+### Migrations
+
+TypeORM migrations live in `src/database/migrations/`. The migration history is tracked in the `shophub_migrations` table.
 
 ```bash
-# unit tests
-$ npm run test
+# Apply all pending migrations against $DATABASE_URL
+npm run migration:run
 
-# e2e tests
-$ npm run test:e2e
+# Revert the most recently applied migration
+npm run migration:revert
 
-# test coverage
-$ npm run test:cov
+# Generate a new migration from current entities vs the database schema
+npm run migration:generate -- src/database/migrations/<MigrationName>
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+When running against the local docker-compose Postgres on the host, set `DATABASE_URL` to match the host port:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+DATABASE_URL="postgres://shophub:changeme@localhost:5432/shophub" npm run migration:run
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Tests
 
-## Resources
+```bash
+npm test            # unit tests
+npm run test:e2e    # HTTP end-to-end tests
+npm run test:int    # integration tests (spins up Postgres via Testcontainers)
+npm run test:all    # all three suites in sequence
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+From the repo root, `make test` is the convenience entrypoint that runs `test:all` inside `backend/`.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Project layout
 
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```
+src/
+  app.controller.ts     # root + /health endpoints
+  app.module.ts         # wires DatabaseModule and feature modules
+  database/
+    data-source.ts      # TypeORM DataSource for the migration CLI
+    database.module.ts  # NestJS module that wraps the runtime connection
+    migrations/         # ordered, hand-written migrations
+test/
+  app.e2e-spec.ts                       # HTTP e2e tests
+  integration/database.int-spec.ts      # Testcontainers integration tests
+```
