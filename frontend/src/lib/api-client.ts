@@ -1,4 +1,5 @@
 import { authStorage, StoredUser } from './auth-storage';
+import { CreateShopRequest, Shop, UpdateShopRequest } from './shop-types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
@@ -74,5 +75,26 @@ export const api = {
   },
   me(): Promise<StoredUser> {
     return request<StoredUser>('/auth/me');
+  },
+  listShops(): Promise<Shop[]> {
+    return request<Shop[]>('/shops');
+  },
+  getShop(id: string): Promise<Shop> {
+    return request<Shop>(`/shops/${id}`);
+  },
+  createShop(payload: CreateShopRequest): Promise<Shop> {
+    return request<Shop>('/shops', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+  updateShop(id: string, payload: UpdateShopRequest): Promise<Shop> {
+    return request<Shop>(`/shops/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+  },
+  deleteShop(id: string): Promise<void> {
+    return request<void>(`/shops/${id}`, { method: 'DELETE' });
   },
 };
