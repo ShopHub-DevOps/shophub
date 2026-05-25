@@ -20,19 +20,27 @@ export default function Home() {
         {isLoading ? (
           <p className="text-sm text-zinc-500">Loading session...</p>
         ) : user ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <p className="text-sm text-zinc-700 dark:text-zinc-300">
               Signed in as{' '}
               <span className="font-medium">
                 {user.email ?? user.walletAddress}
               </span>
             </p>
-            <button
-              onClick={logout}
-              className="rounded border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-700"
-            >
-              Sign out
-            </button>
+            <div className="flex gap-3">
+              <Link
+                href="/shops"
+                className="rounded bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-[#383838] dark:hover:bg-[#ccc]"
+              >
+                My shops
+              </Link>
+              <button
+                onClick={logout}
+                className="rounded border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-700"
+              >
+                Sign out
+              </button>
+            </div>
           </div>
         ) : (
           <div className="flex gap-3">

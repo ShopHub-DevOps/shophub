@@ -1,4 +1,23 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+// @kubernetes/client-node ships as ESM in v1.x; ts-jest's CJS transform
+// chokes on it. e2e tests boot the full AppModule which pulls in
+// ShopsModule -> ShopCRClient -> @kubernetes/client-node, so we stub it
+// at module-load time. No K8s calls happen in these tests.
+jest.mock('@kubernetes/client-node', () => ({
+  CustomObjectsApi: class {},
+  KubeConfig: class {
+    loadFromDefault(): void {}
+    makeApiClient(): unknown {
+      return {};
+    }
+    getCurrentContext(): string {
+      return 'mock';
+    }
+  },
+  PatchStrategy: { MergePatch: 'application/merge-patch+json' },
+  setHeaderOptions: () => ({}),
+}));
+
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
