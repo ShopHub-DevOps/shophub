@@ -1,14 +1,17 @@
 import 'reflect-metadata';
+import { config as loadDotenv } from 'dotenv';
 import { DataSource } from 'typeorm';
 
 /**
  * Standalone TypeORM DataSource consumed by the typeorm CLI for
  * migration commands (migration:run, migration:revert, migration:generate).
  *
- * The runtime app reads the same DATABASE_URL value through its own
- * DatabaseModule, so the two paths stay in sync without sharing a
- * Nest-specific config helper.
+ * Loads .env from backend/.env first, then falls back to repo-root .env,
+ * matching the lookup ConfigModule does at runtime.
  */
+loadDotenv({ path: '.env' });
+loadDotenv({ path: '../.env' });
+
 const dataSource = new DataSource({
   type: 'postgres',
   url: process.env.DATABASE_URL,

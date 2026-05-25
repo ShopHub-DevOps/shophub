@@ -27,6 +27,10 @@ services:
       NODE_ENV: production
       PORT: 3000
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-24h}
+      SIWE_DOMAIN: ${SIWE_DOMAIN:-localhost:3000}
+      SIWE_ORIGIN: ${SIWE_ORIGIN:-http://localhost:3000}
     ports:
       - "${BACKEND_PORT:-8080}:3000"
     depends_on:
