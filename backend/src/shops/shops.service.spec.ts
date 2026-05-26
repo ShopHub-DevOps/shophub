@@ -42,30 +42,31 @@ describe('ShopsService (unit)', () => {
     chainId: 11155111,
   };
 
-  const buildShop = (over: Partial<Shop> = {}): Shop =>
-    ({
-      id: 'shop-id-1',
-      userId: ownerId,
-      k8sName: 'shop-deadbeef',
-      displayName: 'Demo',
-      host: 'demo.shophub.local',
-      availability: 'standard',
-      databaseTier: 'standard',
-      walletAddress: '0xabcdef1234567890abcdef1234567890abcdef12',
-      chainId: '11155111',
-      backendImage: null,
-      frontendImage: null,
-      lastKnownPhase: null,
-      lastKnownUrl: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      normalize: () => undefined,
-      ...over,
-    }) as Shop;
+  const buildShop = (over: Partial<Shop> = {}): Shop => ({
+    id: 'shop-id-1',
+    userId: ownerId,
+    k8sName: 'shop-deadbeef',
+    displayName: 'Demo',
+    host: 'demo.shophub.local',
+    availability: 'standard',
+    databaseTier: 'standard',
+    walletAddress: '0xabcdef1234567890abcdef1234567890abcdef12',
+    chainId: '11155111',
+    backendImage: null,
+    frontendImage: null,
+    lastKnownPhase: null,
+    lastKnownUrl: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    normalize: () => undefined,
+    ...over,
+  });
 
   beforeEach(async () => {
     const repoMock: Partial<jest.Mocked<Repository<Shop>>> = {
-      create: jest.fn().mockImplementation((data: Partial<Shop>) => buildShop(data)),
+      create: jest
+        .fn()
+        .mockImplementation((data: Partial<Shop>) => buildShop(data)),
       save: jest.fn().mockImplementation((shop: Shop) => Promise.resolve(shop)),
       find: jest.fn(),
       findOne: jest.fn(),
@@ -118,9 +119,9 @@ describe('ShopsService (unit)', () => {
     it('rolls back the DB row when the CR create fails', async () => {
       k8s.create.mockRejectedValue(new Error('cluster unreachable'));
 
-      await expect(
-        service.createForUser(ownerId, sampleInput),
-      ).rejects.toThrow('cluster unreachable');
+      await expect(service.createForUser(ownerId, sampleInput)).rejects.toThrow(
+        'cluster unreachable',
+      );
 
       expect(repo.delete).toHaveBeenCalledTimes(1);
     });
@@ -146,7 +147,7 @@ describe('ShopsService (unit)', () => {
       expect(got).toBe(shop);
     });
 
-    it("throws NotFoundException when the shop belongs to another user", async () => {
+    it('throws NotFoundException when the shop belongs to another user', async () => {
       repo.findOne.mockResolvedValue(null);
 
       await expect(
@@ -169,7 +170,9 @@ describe('ShopsService (unit)', () => {
       const [name, spec] = k8s.patchSpec.mock.calls[0];
       expect(name).toBe(existing.k8sName);
       expect(spec.availability).toBe('high');
-      expect(spec.walletAddress).toBe('0x1111111111111111111111111111111111111111');
+      expect(spec.walletAddress).toBe(
+        '0x1111111111111111111111111111111111111111',
+      );
     });
   });
 

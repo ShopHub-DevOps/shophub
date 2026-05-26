@@ -5,32 +5,31 @@ import {
   setHeaderOptions,
 } from '@kubernetes/client-node';
 import {
+  ConflictException,
   Injectable,
   Logger,
   NotFoundException,
   OnModuleInit,
-  ConflictException,
 } from '@nestjs/common';
 import {
+  DISCORD_CHANNEL_CR_PLURAL,
   SHOP_CR_GROUP,
   SHOP_CR_NAMESPACE,
-  SHOP_CR_PLURAL,
   SHOP_CR_VERSION,
 } from './k8s.constants';
-import { ShopCR, ShopSpec } from './shop-cr.types';
+import {
+  DiscordChannelCR,
+  DiscordChannelSpec,
+} from './discord-channel-cr.types';
 
 /**
- * Wraps @kubernetes/client-node CustomObjectsApi for the Shop CRD.
- *
- * Connection strategy mirrors the official client default: try in-cluster
- * (mounted ServiceAccount token) first, fall back to ~/.kube/config for
- * local development. If neither is available the module still boots so
- * that unrelated requests (auth, health) keep working - K8s calls then
- * fail at request time with a descriptive error.
+ * Wraps @kubernetes/client-node CustomObjectsApi for the DiscordChannel CRD.
+ * Mirrors the connection strategy of ShopCRClient: in-cluster first, fall
+ * back to ~/.kube/config for local development.
  */
 @Injectable()
-export class ShopCRClient implements OnModuleInit {
-  private readonly logger = new Logger(ShopCRClient.name);
+export class DiscordChannelCRClient implements OnModuleInit {
+  private readonly logger = new Logger(DiscordChannelCRClient.name);
   private api?: CustomObjectsApi;
   private connectionError?: Error;
 
@@ -46,7 +45,7 @@ export class ShopCRClient implements OnModuleInit {
         err instanceof Error ? err : new Error(String(err));
       this.logger.warn(
         `Kubernetes client could not initialize: ${this.connectionError.message}. ` +
-          'Shop CR operations will fail until kubeconfig or in-cluster credentials are available.',
+          'DiscordChannel CR operations will fail until kubeconfig or in-cluster credentials are available.',
       );
     }
   }
@@ -55,11 +54,14 @@ export class ShopCRClient implements OnModuleInit {
     return this.api !== undefined;
   }
 
-  async create(name: string, spec: ShopSpec): Promise<ShopCR> {
+  async create(
+    name: string,
+    spec: DiscordChannelSpec,
+  ): Promise<DiscordChannelCR> {
     const api = this.requireApi();
-    const body: ShopCR = {
+    const body: DiscordChannelCR = {
       apiVersion: `${SHOP_CR_GROUP}/${SHOP_CR_VERSION}`,
-      kind: 'Shop',
+      kind: 'DiscordChannel',
       metadata: { name, namespace: SHOP_CR_NAMESPACE },
       spec,
     };
@@ -68,29 +70,31 @@ export class ShopCRClient implements OnModuleInit {
         group: SHOP_CR_GROUP,
         version: SHOP_CR_VERSION,
         namespace: SHOP_CR_NAMESPACE,
-        plural: SHOP_CR_PLURAL,
+        plural: DISCORD_CHANNEL_CR_PLURAL,
         body,
       });
-      return result as ShopCR;
+      return result as DiscordChannelCR;
     } catch (err) {
       if (this.statusCode(err) === 409) {
-        throw new ConflictException(`Shop ${name} already exists in cluster`);
+        throw new ConflictException(
+          `DiscordChannel ${name} already exists in cluster`,
+        );
       }
       throw err;
     }
   }
 
-  async get(name: string): Promise<ShopCR | null> {
+  async get(name: string): Promise<DiscordChannelCR | null> {
     const api = this.requireApi();
     try {
       const result = await api.getNamespacedCustomObject({
         group: SHOP_CR_GROUP,
         version: SHOP_CR_VERSION,
         namespace: SHOP_CR_NAMESPACE,
-        plural: SHOP_CR_PLURAL,
+        plural: DISCORD_CHANNEL_CR_PLURAL,
         name,
       });
-      return result as ShopCR;
+      return result as DiscordChannelCR;
     } catch (err) {
       if (this.statusCode(err) === 404) {
         return null;
@@ -99,18 +103,21 @@ export class ShopCRClient implements OnModuleInit {
     }
   }
 
-  async list(): Promise<ShopCR[]> {
+  async list(): Promise<DiscordChannelCR[]> {
     const api = this.requireApi();
     const result = await api.listNamespacedCustomObject({
       group: SHOP_CR_GROUP,
       version: SHOP_CR_VERSION,
       namespace: SHOP_CR_NAMESPACE,
-      plural: SHOP_CR_PLURAL,
+      plural: DISCORD_CHANNEL_CR_PLURAL,
     });
-    return (result as { items?: ShopCR[] }).items ?? [];
+    return (result as { items?: DiscordChannelCR[] }).items ?? [];
   }
 
-  async patchSpec(name: string, patch: Partial<ShopSpec>): Promise<ShopCR> {
+  async patchSpec(
+    name: string,
+    patch: Partial<DiscordChannelSpec>,
+  ): Promise<DiscordChannelCR> {
     const api = this.requireApi();
     try {
       const result = await api.patchNamespacedCustomObject(
@@ -118,16 +125,18 @@ export class ShopCRClient implements OnModuleInit {
           group: SHOP_CR_GROUP,
           version: SHOP_CR_VERSION,
           namespace: SHOP_CR_NAMESPACE,
-          plural: SHOP_CR_PLURAL,
+          plural: DISCORD_CHANNEL_CR_PLURAL,
           name,
           body: { spec: patch },
         },
         setHeaderOptions('Content-Type', PatchStrategy.MergePatch),
       );
-      return result as ShopCR;
+      return result as DiscordChannelCR;
     } catch (err) {
       if (this.statusCode(err) === 404) {
-        throw new NotFoundException(`Shop ${name} not found in cluster`);
+        throw new NotFoundException(
+          `DiscordChannel ${name} not found in cluster`,
+        );
       }
       throw err;
     }
@@ -140,7 +149,7 @@ export class ShopCRClient implements OnModuleInit {
         group: SHOP_CR_GROUP,
         version: SHOP_CR_VERSION,
         namespace: SHOP_CR_NAMESPACE,
-        plural: SHOP_CR_PLURAL,
+        plural: DISCORD_CHANNEL_CR_PLURAL,
         name,
       });
     } catch (err) {

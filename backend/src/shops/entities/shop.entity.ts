@@ -16,14 +16,8 @@ import type {
 } from '../../k8s/shop-cr.types';
 
 @Entity({ name: 'shops' })
-@Check(
-  'chk_shops_availability',
-  `"availability" IN ('standard', 'high')`,
-)
-@Check(
-  'chk_shops_database_tier',
-  `"database_tier" IN ('standard', 'light')`,
-)
+@Check('chk_shops_availability', `"availability" IN ('standard', 'high')`)
+@Check('chk_shops_database_tier', `"database_tier" IN ('standard', 'light')`)
 @Index('uniq_shops_k8s_name', ['k8sName'], { unique: true })
 @Index('uniq_shops_host', ['host'], { unique: true })
 @Index('idx_shops_user_id', ['userId'])
@@ -59,16 +53,36 @@ export class Shop {
   @Column({ name: 'chain_id', type: 'bigint', default: 11155111 })
   chainId!: string;
 
-  @Column({ name: 'backend_image', type: 'varchar', length: 255, nullable: true })
+  @Column({
+    name: 'backend_image',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
   backendImage!: string | null;
 
-  @Column({ name: 'frontend_image', type: 'varchar', length: 255, nullable: true })
+  @Column({
+    name: 'frontend_image',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
   frontendImage!: string | null;
 
-  @Column({ name: 'last_known_phase', type: 'varchar', length: 16, nullable: true })
+  @Column({
+    name: 'last_known_phase',
+    type: 'varchar',
+    length: 16,
+    nullable: true,
+  })
   lastKnownPhase!: ShopPhase | null;
 
-  @Column({ name: 'last_known_url', type: 'varchar', length: 512, nullable: true })
+  @Column({
+    name: 'last_known_url',
+    type: 'varchar',
+    length: 512,
+    nullable: true,
+  })
   lastKnownUrl!: string | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
