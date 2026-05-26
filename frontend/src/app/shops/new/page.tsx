@@ -1,10 +1,12 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { ApiError, api } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth-context';
 import { AvailabilityTier, DatabaseTier } from '@/lib/shop-types';
+import { Wallet } from '@/lib/wallet-types';
 
 export default function NewShopPage() {
   const router = useRouter();
@@ -16,14 +18,30 @@ export default function NewShopPage() {
   const [databaseTier, setDatabaseTier] = useState<DatabaseTier>('standard');
   const [walletAddress, setWalletAddress] = useState('');
   const [chainId, setChainId] = useState(11155111);
+  const [wallets, setWallets] = useState<Wallet[]>([]);
+  const [selectedWalletId, setSelectedWalletId] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
+      return;
+    }
+    if (user) {
+      api.listWallets().then(setWallets).catch(() => undefined);
     }
   }, [authLoading, user, router]);
+
+  const onPickWallet = (id: string) => {
+    setSelectedWalletId(id);
+    if (!id) return;
+    const picked = wallets.find((w) => w.id === id);
+    if (picked) {
+      setWalletAddress(picked.address);
+      setChainId(Number(picked.chainId));
+    }
+  };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -115,6 +133,33 @@ export default function NewShopPage() {
           </label>
         </div>
 
+        {wallets.length > 0 && (
+          <label className="block space-y-1 text-sm">
+            <span className="text-zinc-700 dark:text-zinc-300">
+              Use one of my wallets
+            </span>
+            <select
+              value={selectedWalletId}
+              onChange={(e) => onPickWallet(e.target.value)}
+              className="w-full rounded border border-zinc-300 bg-white px-3 py-2 text-black dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            >
+              <option value="">(enter address manually below)</option>
+              {wallets.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.displayName} - {w.address.slice(0, 10)}... (chain {w.chainId})
+                </option>
+              ))}
+            </select>
+            <span className="block text-xs text-zinc-500">
+              Picking a wallet pre-fills address and chain ID. You can also{' '}
+              <Link href="/wallets/new" className="underline">
+                add a new wallet
+              </Link>{' '}
+              first.
+            </span>
+          </label>
+        )}
+
         <label className="block space-y-1 text-sm">
           <span className="text-zinc-700 dark:text-zinc-300">Wallet address (EVM)</span>
           <input
@@ -122,7 +167,10 @@ export default function NewShopPage() {
             required
             pattern="^0x[a-fA-F0-9]{40}$"
             value={walletAddress}
-            onChange={(e) => setWalletAddress(e.target.value)}
+            onChange={(e) => {
+              setWalletAddress(e.target.value);
+              setSelectedWalletId('');
+            }}
             placeholder="0xabc..."
             className="w-full rounded border border-zinc-300 bg-white px-3 py-2 font-mono text-black dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
           />

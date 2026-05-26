@@ -1,5 +1,15 @@
 import { authStorage, StoredUser } from './auth-storage';
+import {
+  CreateDiscordChannelRequest,
+  DiscordChannel,
+  UpdateDiscordChannelRequest,
+} from './discord-channel-types';
 import { CreateShopRequest, Shop, UpdateShopRequest } from './shop-types';
+import {
+  CreateWalletRequest,
+  UpdateWalletRequest,
+  Wallet,
+} from './wallet-types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
@@ -96,5 +106,52 @@ export const api = {
   },
   deleteShop(id: string): Promise<void> {
     return request<void>(`/shops/${id}`, { method: 'DELETE' });
+  },
+  listDiscordChannels(): Promise<DiscordChannel[]> {
+    return request<DiscordChannel[]>('/discord-channels');
+  },
+  getDiscordChannel(id: string): Promise<DiscordChannel> {
+    return request<DiscordChannel>(`/discord-channels/${id}`);
+  },
+  createDiscordChannel(
+    payload: CreateDiscordChannelRequest,
+  ): Promise<DiscordChannel> {
+    return request<DiscordChannel>('/discord-channels', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+  updateDiscordChannel(
+    id: string,
+    payload: UpdateDiscordChannelRequest,
+  ): Promise<DiscordChannel> {
+    return request<DiscordChannel>(`/discord-channels/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+  },
+  deleteDiscordChannel(id: string): Promise<void> {
+    return request<void>(`/discord-channels/${id}`, { method: 'DELETE' });
+  },
+  listWallets(): Promise<Wallet[]> {
+    return request<Wallet[]>('/wallets');
+  },
+  getWallet(id: string): Promise<Wallet> {
+    return request<Wallet>(`/wallets/${id}`);
+  },
+  createWallet(payload: CreateWalletRequest): Promise<Wallet> {
+    return request<Wallet>('/wallets', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+  updateWallet(id: string, payload: UpdateWalletRequest): Promise<Wallet> {
+    return request<Wallet>(`/wallets/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+  },
+  deleteWallet(id: string): Promise<void> {
+    return request<void>(`/wallets/${id}`, { method: 'DELETE' });
   },
 };
