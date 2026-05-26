@@ -24,14 +24,17 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<StoredUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Skip the initial loading flicker when there is no token to validate.
+  // Lazy initializer runs once on mount; localStorage is browser-only so
+  // we guard for SSR even though this component is rendered client-side.
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return authStorage.getToken() !== null;
+  });
 
   useEffect(() => {
     const token = authStorage.getToken();
-    if (!token) {
-      setIsLoading(false);
-      return;
-    }
+    if (!token) return;
     api
       .me()
       .then((fresh) => {
