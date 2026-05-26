@@ -9,6 +9,7 @@ import { DatabaseModule } from './database/database.module';
 import { DiscordChannelsModule } from './discord-channels/discord-channels.module';
 import { ShopsModule } from './shops/shops.module';
 import { UsersModule } from './users/users.module';
+import { WalletsModule } from './wallets/wallets.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     ShopsModule,
     DiscordChannelsModule,
+    WalletsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
