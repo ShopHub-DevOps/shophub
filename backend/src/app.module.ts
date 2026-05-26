@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { validateEnv } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
+import { DiscordChannelsModule } from './discord-channels/discord-channels.module';
 import { ShopsModule } from './shops/shops.module';
 import { UsersModule } from './users/users.module';
 
@@ -22,6 +23,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     AuthModule,
     ShopsModule,
+    DiscordChannelsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
