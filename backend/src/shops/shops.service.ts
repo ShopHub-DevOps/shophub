@@ -105,12 +105,17 @@ export class ShopsService {
     const shop = await this.findOneForUser(userId, id);
 
     if (input.displayName !== undefined) shop.displayName = input.displayName;
-    if (input.availability !== undefined) shop.availability = input.availability;
-    if (input.databaseTier !== undefined) shop.databaseTier = input.databaseTier;
-    if (input.walletAddress !== undefined) shop.walletAddress = input.walletAddress;
+    if (input.availability !== undefined)
+      shop.availability = input.availability;
+    if (input.databaseTier !== undefined)
+      shop.databaseTier = input.databaseTier;
+    if (input.walletAddress !== undefined)
+      shop.walletAddress = input.walletAddress;
     if (input.chainId !== undefined) shop.chainId = String(input.chainId);
-    if (input.backendImage !== undefined) shop.backendImage = input.backendImage;
-    if (input.frontendImage !== undefined) shop.frontendImage = input.frontendImage;
+    if (input.backendImage !== undefined)
+      shop.backendImage = input.backendImage;
+    if (input.frontendImage !== undefined)
+      shop.frontendImage = input.frontendImage;
 
     const saved = await this.shops.save(shop);
     await this.k8s.patchSpec(saved.k8sName, shopEntityToCRSpec(saved));

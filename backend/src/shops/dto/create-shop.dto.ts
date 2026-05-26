@@ -10,7 +10,8 @@ import {
   MinLength,
 } from 'class-validator';
 
-const HOST_PATTERN = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)+$/;
+const HOST_PATTERN =
+  /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)+$/;
 
 export class CreateShopDto {
   @IsString()

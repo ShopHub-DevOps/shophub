@@ -139,7 +139,11 @@ describe('Shops (integration)', () => {
       const res = await request(app.getHttpServer())
         .post('/shops')
         .set('Authorization', `Bearer ${token}`)
-        .send({ ...validShop, host: 'bad.shophub.local', walletAddress: 'not-an-address' });
+        .send({
+          ...validShop,
+          host: 'bad.shophub.local',
+          walletAddress: 'not-an-address',
+        });
       expect(res.status).toBe(400);
     });
   });
