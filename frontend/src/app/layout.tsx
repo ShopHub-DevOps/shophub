@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { AuthProvider } from '@/lib/auth-context';
+import { AuthenticatedNav } from '@/lib/authenticated-nav';
 import { Web3Provider } from '@/lib/web3-provider';
 import './globals.css';
 
@@ -31,7 +32,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <Web3Provider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <AuthenticatedNav />
+            {children}
+          </AuthProvider>
         </Web3Provider>
       </body>
     </html>
