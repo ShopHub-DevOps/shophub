@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
+import { register } from './observability/metrics';
 
 @Controller()
 export class AppController {
@@ -13,5 +14,10 @@ export class AppController {
   @Get('health')
   getHealth(): { status: string } {
     return { status: 'ok' };
+  }
+
+  @Get('/metrics')
+  async metrics() {
+    return register.metrics();
   }
 }

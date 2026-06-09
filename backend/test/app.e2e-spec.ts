@@ -72,4 +72,16 @@ describe('AppController (e2e)', () => {
       .expect(200)
       .expect({ status: 'ok' });
   });
+
+  it('/metrics (GET) should return 200 and Prometheus formatted data', () => {
+    return request(app.getHttpServer())
+      .get('/metrics')
+      .expect(200)
+      .expect((res) => {
+        // check if response contains standard Prom labels
+        expect(res.text).toContain('# HELP');
+        expect(res.text).toContain('# TYPE');
+        expect(res.text).toContain('shophub_http_requests_total');
+      });
+  });
 });
