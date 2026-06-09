@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
@@ -10,9 +10,16 @@ import { DiscordChannelsModule } from './discord-channels/discord-channels.modul
 import { ShopsModule } from './shops/shops.module';
 import { UsersModule } from './users/users.module';
 import { WalletsModule } from './wallets/wallets.module';
+import { MetricsMiddleware } from './observability/metrics.middleware';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level: process.env.LOG_LEVEL || 'info',
+      },
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
@@ -30,4 +37,8 @@ import { WalletsModule } from './wallets/wallets.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(MetricsMiddleware).forRoutes('*');
+  }
+}
