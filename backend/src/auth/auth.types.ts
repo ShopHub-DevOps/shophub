@@ -11,4 +11,6 @@ export interface AuthenticatedUser {
 
 export interface JwtPayload {
   sub: string;
+  email?: string;
+  walletAddress?: string;
 }

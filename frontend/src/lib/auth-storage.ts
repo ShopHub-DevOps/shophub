@@ -15,6 +15,13 @@ export const authStorage = {
   setToken(token: string): void {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(TOKEN_KEY, token);
+
+    // Write token to a cookie scoped to the root domain for SSO
+    const parts = window.location.hostname.split('.');
+    const domain = (parts.length > 1 && parts.join('.') !== '127.0.0.1') 
+      ? `; domain=.${parts.slice(-2).join('.')}` 
+      : '';
+    document.cookie = `token=${token}; path=/${domain}; max-age=86400; samesite=lax`;
   },
   getUser(): StoredUser | null {
     if (typeof window === 'undefined') return null;
@@ -34,5 +41,12 @@ export const authStorage = {
     if (typeof window === 'undefined') return;
     window.localStorage.removeItem(TOKEN_KEY);
     window.localStorage.removeItem(USER_KEY);
+
+    // Clear SSO cookie
+    const parts = window.location.hostname.split('.');
+    const domain = (parts.length > 1 && parts.join('.') !== '127.0.0.1') 
+      ? `; domain=.${parts.slice(-2).join('.')}` 
+      : '';
+    document.cookie = `token=; path=/${domain}; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
   },
 };
