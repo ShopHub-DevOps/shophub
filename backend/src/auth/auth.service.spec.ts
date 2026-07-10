@@ -78,7 +78,11 @@ describe('AuthService (unit)', () => {
 
       expect(result.accessToken).toBe('signed-jwt');
       expect(result.user.id).toBe(created.id);
-      expect(jwt.sign).toHaveBeenCalledWith({ sub: created.id });
+      expect(jwt.sign).toHaveBeenCalledWith({
+        sub: created.id,
+        email: created.email || undefined,
+        walletAddress: created.walletAddress || undefined,
+      });
     });
 
     it('throws ConflictException on unique violation', async () => {

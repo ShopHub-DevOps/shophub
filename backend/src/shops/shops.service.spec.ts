@@ -96,7 +96,7 @@ describe('ShopsService (unit)', () => {
 
   describe('createForUser', () => {
     it('persists the shop and applies a Shop CR with the mapped spec', async () => {
-      await service.createForUser(ownerId, sampleInput);
+      await service.createForUser(ownerId, 'owner@example.com', sampleInput);
 
       expect(repo.save).toHaveBeenCalledTimes(1);
       const saved = repo.save.mock.calls[0][0] as Shop;
@@ -119,7 +119,7 @@ describe('ShopsService (unit)', () => {
     it('rolls back the DB row when the CR create fails', async () => {
       k8s.create.mockRejectedValue(new Error('cluster unreachable'));
 
-      await expect(service.createForUser(ownerId, sampleInput)).rejects.toThrow(
+      await expect(service.createForUser(ownerId, 'owner@example.com', sampleInput)).rejects.toThrow(
         'cluster unreachable',
       );
 
@@ -132,7 +132,7 @@ describe('ShopsService (unit)', () => {
       repo.save.mockRejectedValueOnce(err);
 
       await expect(
-        service.createForUser(ownerId, sampleInput),
+        service.createForUser(ownerId, 'owner@example.com', sampleInput),
       ).rejects.toBeInstanceOf(ConflictException);
       expect(k8s.create).not.toHaveBeenCalled();
     });
@@ -161,7 +161,7 @@ describe('ShopsService (unit)', () => {
       const existing = buildShop();
       repo.findOne.mockResolvedValue(existing);
 
-      await service.updateForUser(ownerId, existing.id, {
+      await service.updateForUser(ownerId, 'owner@example.com', existing.id, {
         availability: 'high',
         walletAddress: '0x1111111111111111111111111111111111111111',
       });
