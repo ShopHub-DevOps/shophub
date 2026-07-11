@@ -11,7 +11,14 @@ import {
   Wallet,
 } from './wallet-types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
+const getApiUrl = () => {
+  if (typeof window !== 'undefined') {
+    return '/api'; // Use relative path in browser to avoid CORS and build-time env issues
+  }
+  return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
+};
+
+const API_URL = getApiUrl();
 
 export class ApiError extends Error {
   constructor(

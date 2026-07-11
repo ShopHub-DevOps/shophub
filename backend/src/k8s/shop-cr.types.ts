@@ -23,6 +23,7 @@ export interface ShopSpec {
   walletAddress: string;
   chainId?: number;
   images?: ShopImages;
+  ownerEmail?: string;
 }
 
 export interface ShopCondition {

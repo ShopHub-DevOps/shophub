@@ -107,7 +107,11 @@ export class AuthService {
   }
 
   buildResponse(user: User): AuthResponse {
-    const payload: JwtPayload = { sub: user.id };
+    const payload: JwtPayload = {
+      sub: user.id,
+      email: user.email || undefined,
+      walletAddress: user.walletAddress || undefined,
+    };
     return {
       accessToken: this.jwt.sign(payload),
       user: this.toAuthenticatedUser(user),

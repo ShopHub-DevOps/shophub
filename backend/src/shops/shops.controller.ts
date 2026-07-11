@@ -27,7 +27,7 @@ export class ShopsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(@CurrentUser() user: User, @Body() dto: CreateShopDto): Promise<Shop> {
-    return this.shops.createForUser(user.id, dto);
+    return this.shops.createForUser(user.id, user.email!, dto);
   }
 
   @Get()
@@ -49,7 +49,7 @@ export class ShopsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateShopDto,
   ): Promise<Shop> {
-    return this.shops.updateForUser(user.id, id, dto);
+    return this.shops.updateForUser(user.id, user.email!, id, dto);
   }
 
   @Delete(':id')

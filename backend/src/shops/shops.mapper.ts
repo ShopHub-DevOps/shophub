@@ -6,7 +6,7 @@ import { Shop } from './entities/shop.entity';
  * Optional images object is omitted when both fields are null so we never
  * write `{ backend: '', frontend: '' }` to the cluster.
  */
-export function shopEntityToCRSpec(shop: Shop): ShopSpec {
+export function shopEntityToCRSpec(shop: Shop, ownerEmail: string): ShopSpec {
   const spec: ShopSpec = {
     displayName: shop.displayName,
     host: shop.host,
@@ -14,6 +14,7 @@ export function shopEntityToCRSpec(shop: Shop): ShopSpec {
     databaseTier: shop.databaseTier,
     walletAddress: shop.walletAddress,
     chainId: Number(shop.chainId),
+    ownerEmail: ownerEmail,
   };
   if (shop.backendImage || shop.frontendImage) {
     spec.images = {};

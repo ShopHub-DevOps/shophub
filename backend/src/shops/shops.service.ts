@@ -45,7 +45,12 @@ export class ShopsService {
     private readonly k8s: ShopCRClient,
   ) {}
 
-  async createForUser(userId: string, input: CreateShopInput): Promise<Shop> {
+  // 1. IZMENA: Dodat userEmail parametar
+  async createForUser(
+    userId: string,
+    userEmail: string,
+    input: CreateShopInput,
+  ): Promise<Shop> {
     const shop = this.shops.create({
       userId,
       k8sName: generateShopK8sName(),
@@ -70,7 +75,11 @@ export class ShopsService {
     }
 
     try {
-      await this.k8s.create(saved.k8sName, shopEntityToCRSpec(saved));
+      // 2. IZMENA: Prosleđujemo userEmail maperu
+      await this.k8s.create(
+        saved.k8sName,
+        shopEntityToCRSpec(saved, userEmail),
+      );
     } catch (err) {
       this.logger.error(
         `Failed to create Shop CR ${saved.k8sName}, rolling back DB row`,
@@ -97,8 +106,10 @@ export class ShopsService {
     return shop;
   }
 
+  // 3. IZMENA: Dodat userEmail parametar jer i update radi sinhronizaciju sa CRD-om
   async updateForUser(
     userId: string,
+    userEmail: string,
     id: string,
     input: UpdateShopInput,
   ): Promise<Shop> {
@@ -118,7 +129,12 @@ export class ShopsService {
       shop.frontendImage = input.frontendImage;
 
     const saved = await this.shops.save(shop);
-    await this.k8s.patchSpec(saved.k8sName, shopEntityToCRSpec(saved));
+
+    // 4. IZMENA: Prosleđujemo userEmail maperu
+    await this.k8s.patchSpec(
+      saved.k8sName,
+      shopEntityToCRSpec(saved, userEmail),
+    );
     return saved;
   }
 
@@ -128,10 +144,6 @@ export class ShopsService {
     await this.shops.delete(shop.id);
   }
 
-  /**
-   * Sweeps every Shop row and copies the latest phase + url from its CR
-   * status into the DB. Intended to be called from a scheduled job.
-   */
   async syncAllStatuses(): Promise<void> {
     if (!this.k8s.isReady()) {
       return;
