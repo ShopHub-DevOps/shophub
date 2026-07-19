@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Header } from '@nestjs/common';
 import { AppService } from './app.service';
 import { register } from './observability/metrics';
 
@@ -16,7 +16,11 @@ export class AppController {
     return { status: 'ok' };
   }
 
+  // Prometheus rejects a scrape whose Content-Type it does not recognise.
+  // Returning a plain string from Nest makes Express default to text/html,
+  // so the exposition format has to be declared explicitly.
   @Get('/metrics')
+  @Header('Content-Type', register.contentType)
   async metrics() {
     return register.metrics();
   }
