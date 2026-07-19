@@ -26,7 +26,9 @@ USER node
 
 EXPOSE 3000
 
+# 127.0.0.1, not localhost: the server binds 0.0.0.0 (IPv4 only), while
+# localhost resolves to ::1 first, so the probe would be refused.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget --quiet --spider http://localhost:3000/health || exit 1
+  CMD wget --quiet --spider http://127.0.0.1:3000/health || exit 1
 
 CMD ["node", "dist/main"]
